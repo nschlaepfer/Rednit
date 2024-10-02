@@ -142,20 +142,22 @@ class OpenAIProcessor:
         self.client = client
 
     def generate_unique_story(self, posts):
-        print("Generating unique story based on scraped posts...")
+        print("Generating unique TikTok-style story based on scraped posts...")
         prompt = (
-            "Based on the following Reddit stories, create a completely unique and uncensored story that combines elements from these posts. "
-            "The story should be engaging, dramatic, and suitable for a short video. Here are the stories:\n\n"
+            "Based on the following Reddit stories, create a short, engaging TikTok-style story. "
+            "The story should be dramatic, uncensored, and suitable for a 1-2 minute video. "
+            "Focus on a single, impactful event or situation with a clear beginning, middle, and end. "
+            "Aim for about 150-200 words. Here are the stories:\n\n"
         )
-        for post in posts:
+        for post in posts[:3]:  # Limit to 3 posts for inspiration
             prompt += f"Title: {post['title']}\nContent: {post.get('content', 'No content available')}\n\n"
         
-        prompt += "Now, create a unique story that's different from these but inspired by their themes and drama."
+        prompt += "Now, create a unique, concise story inspired by these themes, suitable for a short TikTok video."
 
         response = self.client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a creative storyteller who can craft unique, uncensored narratives based on various inputs."},
+                {"role": "system", "content": "You are a creative storyteller who can craft unique, uncensored narratives based on various inputs, specializing in short-form content for platforms like TikTok."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1500,
@@ -167,12 +169,12 @@ class OpenAIProcessor:
         unique_story = response.choices[0].message.content.strip()
         
         # Generate a title for the unique story
-        title_prompt = f"Create a catchy, short title for the following story:\n\n{unique_story}\n\nThe title should be attention-grabbing and suitable for a short video."
+        title_prompt = f"Create a catchy, very short title (max 5 words) for this TikTok-style story:\n\n{unique_story}\n\nThe title should be attention-grabbing and suitable for a short video."
         
         title_response = self.client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are a creative title generator."},
+                {"role": "system", "content": "You are a creative title generator for short-form videos."},
                 {"role": "user", "content": title_prompt}
             ],
             max_tokens=17,
@@ -183,7 +185,7 @@ class OpenAIProcessor:
 
         unique_title = title_response.choices[0].message.content.strip()
 
-        print(f"Unique story generated. Title: {unique_title}")
+        print(f"Unique TikTok-style story generated. Title: {unique_title}")
         return {
             'title': unique_title,
             'content': unique_story
